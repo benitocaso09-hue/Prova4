@@ -44,7 +44,7 @@
                 <button onclick="eseguiLogin()" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 font-medium transition cursor-pointer">Accedi</button>
                 
                 <p class="text-sm text-center text-gray-500 mt-4">
-                    Non hai un account? <a href="#" onclick="mostraFormRegistrazione(true)" class="text-blue-600 hover:underline font-medium">Crea un account</a>
+                    Non hai un account? <a href="#" onclick="mostraFormRegistrazione('REGISTRAZIONE')" class="text-blue-600 hover:underline font-medium">Crea un account</a>
                 </p>
             </div>
         </div>
@@ -53,15 +53,19 @@
             <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">📝 Crea Nuovo Account</h2>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Nome Azienda</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Nome Azienda ditta</label>
                     <input type="text" id="reg-azienda" placeholder="Es. Ditta Rossi Elettronica" class="w-full p-2 border border-blue-300 rounded-md bg-blue-50 text-gray-800 mb-3 font-medium">
                     
                     <label class="block text-sm font-medium text-gray-600 mb-1">Il tuo Nome (o Username)</label>
                     <input type="text" id="reg-nome" class="w-full p-2 border rounded-md bg-gray-50 text-gray-800" placeholder="Es. Benito">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Email (Richiede Verifica Link)</label>
                     <input type="email" id="reg-email" class="w-full p-2 border rounded-md bg-gray-50 text-gray-800" placeholder="esempio@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Numero di Telefono (Con prefisso es. +393331234567)</label>
+                    <input type="tel" id="reg-telefono" class="w-full p-2 border rounded-md bg-gray-50 text-gray-800" placeholder="+393331234567">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Password</label>
@@ -75,20 +79,48 @@
                     </select>
                 </div>
                 <div id="wrapper-codice-admin" class="hidden">
-                    <label class="block text-sm font-medium text-gray-600 mb-1 text-amber-700 font-bold">Codice di Sicurezza Admin</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-1 text-amber-700 font-bold">Codice di Sicurezza Admin attuale per la registrazione</label>
                     <input type="password" id="reg-codice-admin" class="w-full p-2 border border-amber-400 rounded-md bg-amber-50 text-gray-800" placeholder="Inserisci codice sblocco admin">
                 </div>
-                <button onclick="eseguiRegistrazione()" class="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 font-medium transition cursor-pointer">Registrati</button>
+                <button onclick="eseguiRegistrazione()" class="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 font-medium transition cursor-pointer">Registrati e Invia Verifica</button>
                 
                 <p class="text-sm text-center text-gray-500 mt-4">
-                    Hai già un account? <a href="#" onclick="mostraFormRegistrazione(false)" class="text-blue-600 hover:underline font-medium">Accedi qui</a>
+                    Hai già un account? <a href="#" onclick="mostraFormRegistrazione('LOGIN')" class="text-blue-600 hover:underline font-medium">Accedi qui</a>
                 </p>
             </div>
+        </div>
+
+        <div id="box-attesa-email" class="hidden text-center space-y-4">
+            <div class="text-5xl">📩</div>
+            <h2 class="text-xl font-bold text-gray-800">Verifica la tua Email</h2>
+            <p class="text-sm text-gray-600">Abbiamo inviato un link di conferma all'indirizzo inserito. Controlla la tua casella postale (e la cartella Spam) e clicca sul link per attivare l'account.</p>
+            <button onclick="mostraFormRegistrazione('LOGIN')" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 font-medium transition">Ho confermato, vai al Login</button>
+        </div>
+
+        <div id="box-verifica-sms" class="hidden text-center space-y-4">
+            <div class="text-5xl">📱</div>
+            <h2 class="text-xl font-bold text-gray-800">Verifica Numero di Telefono</h2>
+            <p class="text-xs text-gray-500">Un SMS con un codice di sicurezza a 6 cifre è stato inviato al tuo numero.</p>
+            <div>
+                <input type="text" id="input-otp-sms" maxlength="6" class="w-full p-3 border rounded-md bg-gray-50 text-gray-800 text-center font-bold tracking-widest text-lg" placeholder="123456">
+            </div>
+            <button onclick="verificaCodiceSMS()" class="w-full bg-purple-600 text-white p-2 rounded-md hover:bg-purple-700 font-medium transition">Verifica Codice e Accedi</button>
         </div>
 
     </div>
 
     <div id="app-magazzino" class="max-w-7xl mx-auto hidden">
+        
+        <div id="box-credenziali-api" class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg mb-6 text-xs text-indigo-900 shadow-sm hidden">
+            <h4 class="font-bold mb-2 flex items-center gap-1">🔑 Credenziali API e Sicurezza della tua Ditta (Inviate via Email)</h4>
+            <p class="mb-2">Usa questi parametri per integrare software esterni o terminali hardware dedicati alla tua ditta:</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div><b>API URL ditta:</b> <code id="api-url-display" class="bg-white px-1 py-0.5 rounded border"></code></div>
+                <div><b>Ditta API KEY (Token):</b> <code id="api-key-display" class="bg-white px-1 py-0.5 rounded border"></code></div>
+                <div><b>Codice Sicurezza Generato:</b> <code id="api-code-display" class="bg-white px-1 py-0.5 rounded border"></code></div>
+            </div>
+        </div>
+
         <header class="mb-6 flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-lg shadow-sm gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">📦 Inventario Magazzino Elettrico & Fibra Ottica</h1>
@@ -233,500 +265,563 @@
         </div>
 
         <div id="sezione-terminale-admin" class="bg-gray-900 text-green-400 p-4 rounded-lg shadow-inner font-mono text-sm h-42 overflow-y-auto hidden">
-            <p class="text-gray-500">// Registro attività aziendale in tempo reale (Solo Admin)</p>
+            <p class="text-gray-500">// Registro attività aziendale in tempo reale</p>
             <div id="log-terminale"></div>
         </div>
     </div>
 
     <script>
-    const CODICE_SICUREZZA_ADMIN = "1234";
+        const CODICE_SICUREZZA_ADMIN = "1234";
 
-    const DATI_INIZIALI = {
-        "cavi_unipolari": {
-            "1.5mm²": { blu: 0, nero: 0, marrone: 0, giallo_verde: 0 },
-            "2.5mm²": { blu: 0, nero: 0, marrone: 0, giallo_verde: 0 },
-            "4.0mm²": { blu: 0, nero: 0, marrone: 0, giallo_verde: 0 },
-            "6.0mm²": { blu: 0, nero: 0, marrone: 0, giallo_verde: 0 },
-        },
-        "bobine": { 
-            "3G1.5": { metri_totali: 0, pezzi: 0 },
-            "3G2.5": { metri_totali: 0, pezzi: 0 }, 
-            "3G4":   { metri_totali: 0, pezzi: 0 }
-        },
-        "fibra_ottica": { 
-            "monomodale": { metri_totali: 0, pezzi: 0 }, 
-            "multimodale": { metri_totali: 0, pezzi: 0 } 
-        },
-        "componenti_impianti": {
-            "Cavi Multipolari": 0, "Cavi Dati e Coassiali": 0, "Interruttori Magnetotermici": 0,
-            "Differenziali (Salvavita)": 0, "Centralini Incasso/Parete": 0, "Prese": 0,
-            "Interruttori/Deviatori/Invertitori": 0, "Placche Decorative": 0, "Tubi Corrugati": 0,
-            "Canaline Rigide": 0, "Scatole di Derivazione": 0, "Morsetti e Fascette": 0,
-            "Tasselli": 0, "Lampade LED": 0, "Plafoniere e Faretti": 0, "Sistemi di Emergenza": 0
-        },
-        "strumenti_utensili": {
-            "Multimetri": 0, "Tester Tensione (Cercafase)": 0, "Pinze Amperometriche": 0,
-            "Cacciaviti Isolati 1000V": 0, "Pinze e Tronchesi Isolate": 0, "Forbici da Elettricista": 0,
-            "Pinze Crimpatrici": 0, "Spelafili": 0, "Capicorda": 0, "Sonde Passacavo": 0
-        },
-        "sicurezza_logistica": {
-            "Guanti Isolanti": 0, "Occhiali Protettivi": 0, "Elmetti di Protection": 0,
-            "Scarpe Antinfortunistica": 0, "Transpallet": 0, "Scale Isolate": 0,
-            "Trabattelli": 0, "Cartellonistica di Sicurezza": 0, "Nastro Delimitatore / Adesivi Pericolo": 0
-        },
-        "fo_borsa_tecnico": {
-            "Giuntatrice a Fusione + Taglierina": 0, "OTDR di Linea": 0, "Power Meter Ottico": 0,
-            "Penna Laser VFL": 0, "Stripper per Guaine FO": 0, "Pinze per Coating": 0,
-            "Forbici in Kevlar": 0, "Alcol Isopropilico Puro": 0, "Salviettine Kimwipes": 0,
-            "Stick Pulizia Bussole/Connettori": 0
-        },
-        "fo_consumabili_minuteria": {
-            "Coprigiunti Termorestringenti": 0, "Connettori SC/APC": 0, "Connettori LC/UPC": 0,
-            "Pigtail Ottici": 0, "Bretelle Ottiche (Varie Misure)": 0, "Scatole CSOE": 0,
-            "Armadietti Stradali (PFS)": 0, "PTE (Punto Terminazione Edificio)": 0,
-            "Borchie Ottiche da Interno": 0, "Cavi Monofibra / Multifibra (Matasse)": 0,
-            "Fascette Stringicavo FO": 0, "Guaine Termorestringenti Grandi": 0,
-            "Tubi Corrugati Dedicati": 0, "Nastro Isolante": 0
-        },
-        "fo_attrezzature_pesanti": {
-            "Macchina Soffiacavo": 0, "Verricelli per Infilaggio": 0, "Transenne da Cantiere": 0,
-            "Cartellonistica Stradale/Sicurezza": 0, "Coni Stradali": 0, "Rilevatori Servizi Interrati": 0,
-            "Scala Telescopica": 0, "Caschi Protettivi Specialistici": 0, "Guanti e Occhiali Anti-Schegge Vetro": 0
-        },
-        "altro_personalizzato": {}
-    };
+        const DATI_INIZIALI = {
+            "cavi_unipolari": {
+                "1.5mm²": { blu: 0, nero: 0, marrone: 0, giallo_verde: 0 },
+                "2.5mm²": { blu: 0, nero: 0, marrone: 0, giallo_verde: 0 },
+                "4.0mm²": { blu: 0, nero: 0, marrone: 0, giallo_verde: 0 },
+                "6.0mm²": { blu: 0, nero: 0, marrone: 0, giallo_verde: 0 },
+            },
+            "bobine": { 
+                "3G1.5": { metri_totali: 0, pezzi: 0 },
+                "3G2.5": { metri_totali: 0, pezzi: 0 }, 
+                "3G4":   { metri_totali: 0, pezzi: 0 }
+            },
+            "fibra_ottica": { 
+                "monomodale": { metri_totali: 0, pezzi: 0 }, 
+                "multimodale": { metri_totali: 0, pezzi: 0 } 
+            },
+            "componenti_impianti": {
+                "Cavi Multipolari": 0, "Cavi Dati e Coassiali": 0, "Interruttori Magnetotermici": 0,
+                "Differenziali (Salvavita)": 0, "Centralini Incasso/Parete": 0, "Prese": 0,
+                "Interruttori/Deviatori/Invertitori": 0, "Placche Decorative": 0, "Tubi Corrugati": 0,
+                "Canaline Rigide": 0, "Scatole di Derivazione": 0, "Morsetti e Fascette": 0,
+                "Tasselli": 0, "Lampade LED": 0, "Plafoniere e Faretti": 0, "Sistemi di Emergenza": 0
+            },
+            "strumenti_utensili": {
+                "Multimetri": 0, "Tester Tensione (Cercafase)": 0, "Pinze Amperometriche": 0,
+                "Cacciaviti Isolati 1000V": 0, "Pinze e Tronchesi Isolate": 0, "Forbici da Elettricista": 0,
+                "Pinze Crimpatrici": 0, "Spelafili": 0, "Capicorda": 0, "Sonde Passacavo": 0
+            },
+            "sicurezza_logistica": {
+                "Guanti Isolanti": 0, "Occhiali Protettivi": 0, "Elmetti di Protection": 0,
+                "Scarpe Antinfortunistica": 0, "Transpallet": 0, "Scale Isolate": 0,
+                "Trabattelli": 0, "Cartellonistica di Sicurezza": 0, "Nastro Delimitatore / Adesivi Pericolo": 0
+            },
+            "fo_borsa_tecnico": {
+                "Giuntatrice a Fusione + Taglierina": 0, "OTDR di Linea": 0, "Power Meter Ottico": 0,
+                "Penna Laser VFL": 0, "Stripper per Guaine FO": 0, "Pinze per Coating": 0,
+                "Forbici in Kevlar": 0, "Alcol Isopropilico Puro": 0, "Salviettine Kimwipes": 0,
+                "Stick Pulizia Bussole/Connettori": 0
+            },
+            "fo_consumabili_minuteria": {
+                "Coprigiunti Termorestringenti": 0, "Connettori SC/APC": 0, "Connettori LC/UPC": 0,
+                "Pigtail Ottici": 0, "Bretelle Ottiche (Varie Misure)": 0, "Scatole CSOE": 0,
+                "Armadietti Stradali (PFS)": 0, "PTE (Punto Terminazione Edificio)": 0,
+                "Borchie Ottiche da Interno": 0, "Cavi Monofibra / Multifibra (Matasse)": 0,
+                "Fascette Stringicavo FO": 0, "Guaine Termorestringenti Grandi": 0,
+                "Tubi Corrugati Dedicati": 0, "Nastro Isolante": 0
+            },
+            "fo_attrezzature_pesanti": {
+                "Macchina Soffiacavo": 0, "Verricelli per Infilaggio": 0, "Transenne da Cantiere": 0,
+                "Cartellonistica Stradale/Sicurezza": 0, "Coni Stradali": 0, "Rilevatori Servizi Interrati": 0,
+                "Scala Telescopica": 0, "Caschi Protettivi Specialistici": 0, "Guanti e Occhiali Anti-Schegge Vetro": 0
+            },
+            "altro_personalizzato": {}
+        };
 
-    let supabaseClient = null;
+        let supabaseClient = null;
 
-    class InventarioMagazzino {
-        constructor() {
-            let datiSalvati = localStorage.getItem('magazzino_elettrico_v4');
-            if (datiSalvati) {
-                try { this.magazzino = JSON.parse(datiSalvati); } catch (e) { this.magazzino = DATI_INIZIALI; this.salvaNelDatabaseLocal(); }
-            } else {
-                this.magazzino = DATI_INIZIALI;
-                this.salvaNelDatabaseLocal();
-            }
-        }
-
-        salvaNelDatabaseLocal() {
-            localStorage.setItem('magazzino_elettrico_v4', JSON.stringify(this.magazzino));
-        }
-
-        salvaNelDatabase() {
-            this.salvaNelDatabaseLocal();
-            if(supabaseClient) { inviaACloud('inventario', this.magazzino); }
-        }
-
-        aggiornaCavoUnipolare(dimensione, colore, quantita, utente) {
-            const attuale = this.magazzino["cavi_unipolari"][dimensione][colore];
-            if (attuale + quantita < 0) {
-                scriviLog(`❌ Errore: Quantità insufficiente per cavo unipolare ${dimensione} ${colore}. Disponibili: ${attuale}`, true);
-                return false;
-            }
-            this.magazzino["cavi_unipolari"][dimensione][colore] += quantita;
-            const nuovoValore = this.magazzino["cavi_unipolari"][dimensione][colore];
-            this.salvaNelDatabase();
-            scriviLog(`✅ [${utente}] ${quantita > 0 ? 'Caricati' : 'Prelevati'} ${Math.abs(quantita)} pz di cavo unipolare ${dimensione} (${colore}).`);
-            if (quantita < 0) controllaSottoScorta(`Cavo Unipolare ${dimensione} (${colore})`, nuovoValore);
-            return true;
-        }
-
-        aggiornaBobinaStruttura(cat, articolo, metri, pezzi, utente) {
-            const attualeMetri = this.magazzino[cat][articolo].metri_totali;
-            const attualePezzi = this.magazzino[cat][articolo].pezzi;
-
-            if (attualeMetri + metri < 0 || attualePezzi + pezzi < 0) {
-                scriviLog(`❌ Errore: Disponibilità scorte insufficiente per ${articolo}.`, true);
-                return false;
-            }
-            this.magazzino[cat][articolo].metri_totali += metri;
-            this.magazzino[cat][articolo].pezzi += pezzi;
-            const nuoviPezzi = this.magazzino[cat][articolo].pezzi;
-            this.salvaNelDatabase();
-            scriviLog(`✅ [${utente}] Aggiornamento ${articolo}: ${Math.abs(metri)} metri, ${Math.abs(pezzi)} matasse.`);
-            if (pezzi < 0) controllaSottoScorta(`Bobine/Matasse ${articolo}`, nuoviPezzi);
-            return true;
-        }
-
-        aggiornaArticoloGenerico(cat, articolo, quantita, utente) {
-            const attuale = this.magazzino[cat][articolo] || 0;
-            if (attuale + quantita < 0) {
-                scriviLog(`❌ Errore: Disponibilità insufficiente per ${articolo}. Disponibili: ${attuale}`, true);
-                return false;
-            }
-            this.magazzino[cat][articolo] = attuale + quantita;
-            const nuovoValore = this.magazzino[cat][articolo];
-            this.salvaNelDatabase();
-            scriviLog(`✅ [${utente}] ${quantita > 0 ? 'Caricati' : 'Prelevati'} ${Math.abs(quantita)} unità di ${articolo}.`);
-            if (quantita < 0) controllaSottoScorta(articolo, nuovoValore);
-            return true;
-        }
-
-        aggiungiVoceCustom(cat, nomeArticolo) {
-            if (this.magazzino[cat][nomeArticolo] !== undefined) return false;
-            this.magazzino[cat][nomeArticolo] = 0;
-            this.salvaNelDatabase();
-            return true;
-        }
-    }
-
-    const inventario = new InventarioMagazzino();
-
-    async function attivaSincronizzazione() {
-        const url = document.getElementById('supabase-url').value.trim();
-        const key = document.getElementById('supabase-key').value.trim();
-        if(!url || !key) return alert("Inserisci sia l'URL che la Anon Key!");
-        localStorage.setItem('supabase_url', url);
-        localStorage.setItem('supabase_key', key);
-        await inizializzaSupabase(url, key);
-    }
-
-    async function inizializzaSupabase(url, key) {
-        if(!window.supabase) return;
-        supabaseClient = window.supabase.createClient(url, key);
-        const box = document.getElementById('box-sincronizzazione');
-        if(box) {
-            box.className = "max-w-7xl mx-auto bg-green-50 border border-green-300 p-4 rounded-md mb-6 text-sm text-green-900 flex justify-between items-center shadow-sm";
-            box.innerHTML = `<div><span class="font-bold">✅ Sincronizzazione Cloud Attiva!</span><p class="text-xs text-green-700">Magazzino condiviso collegato.</p></div>
-            <button onclick="disattivaSincronizzazione()" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 cursor-pointer font-medium">Disattiva Cloud</button>`;
-        }
-        await scaricaDatiDaCloud();
-    }
-
-    function disattivaSincronizzazione() {
-        if(confirm("Disattivare il cloud?")) {
-            localStorage.removeItem('supabase_url'); localStorage.removeItem('supabase_key'); location.reload();
-        }
-    }
-
-    async function inviaACloud(chiave, valore) {
-        if(!supabaseClient) return;
-        const azienda = sessionStorage.getItem('utente_azienda') || 'generico';
-        const chiaveAziendale = chiave + '_' + azienda;
-        try { await supabaseClient.from('magazzino_condiviso').upsert({ chiave: chiaveAziendale, valore: valore }); } catch(e) { console.error(e); }
-    }
-
-    async function scaricaDatiDaCloud() {
-        if(!supabaseClient) return;
-        const azienda = sessionStorage.getItem('utente_azienda') || 'generico';
-        try {
-            const { data: invData } = await supabaseClient.from('magazzino_condiviso').select('valore').eq('chiave', 'inventario_' + azienda).single();
-            if(invData && invData.valore) { inventario.magazzino = invData.valore; inventario.salvaNelDatabaseLocal(); }
-            
-            const { data: logData } = await supabaseClient.from('magazzino_condiviso').select('valore').eq('chiave', 'registro_logs_' + azienda).single();
-            if(logData && logData.valore) { renderizzaLogs(logData.valore); }
-
-            renderizzaInterfaccia();
-        } catch(e) { /* Fallimento silenzioso se il cassetto aziendale è vuoto */ }
-    }
-
-    setInterval(() => { if(supabaseClient) scaricaDatiDaCloud(); }, 10000);
-
-    function renderizzaLogs(listaLogs) {
-        const terminale = document.getElementById('log-terminale');
-        if(!terminale) return;
-        terminale.innerHTML = "";
-        listaLogs.forEach(l => {
-            const p = document.createElement('p');
-            p.className = l.errore ? "text-red-400 font-bold" : "text-green-400";
-            p.innerHTML = `<span class="text-gray-500">[${l.time}]</span> ${l.msg}`;
-            terminale.appendChild(p);
-        });
-    }
-
-    async function scriviLog(messaggio, isErrore = false) {
-        const timestamp = new Date().toLocaleTimeString('it-IT');
-        let logs = [];
-        const azienda = sessionStorage.getItem('utente_azienda') || 'generico';
-        if(supabaseClient) {
-            const { data } = await supabaseClient.from('magazzino_condiviso').select('valore').eq('chiave', 'registro_logs_' + azienda).single();
-            if(data && data.valore) logs = data.valore;
-        }
-        logs.push({ time: timestamp, msg: messaggio, errore: isErrore });
-        if(logs.length > 100) logs.shift();
-        
-        renderizzaLogs(logs);
-        if(supabaseClient) await inviaACloud('registro_logs', logs);
-    }
-
-    function controllaSottoScorta(nomeArticolo, quantitaAttuale) {
-        if (quantitaAttuale <= 10) {
-            scriviLog(`⚠️ ATTENZIONE: ${nomeArticolo} è sotto scorta! Rimanenti: ${quantitaAttuale} unità`, true);
-            if(sessionStorage.getItem('utente_ruolo') === 'admin') mostraNotificaVisiva(nomeArticolo, quantitaAttuale);
-        }
-    }
-
-    function mostraNotificaVisiva(articolo, qta) {
-        const container = document.getElementById('container-notifiche');
-        const idNotifica = 'notifica-' + Date.now();
-        const mailtoUrl = `mailto:fornitore@esempio.com?subject=Ordine%20Materiale&body=Richiesta%20urgente%20per%20${articolo}`;
-        container.insertAdjacentHTML('beforeend', `<div id="${idNotifica}" class="bg-red-50 border-l-4 border-red-600 p-4 rounded shadow-md border flex flex-col gap-2 bg-white">
-            <div class="flex justify-between items-start"><div><h4 class="text-sm font-bold text-red-800">⚠️ Scorta Critica</h4><p class="text-xs text-gray-700 font-medium mt-1"><b>${articolo}</b> residuo: <b>${qta}</b></p></div><button onclick="this.closest('#${idNotifica}').remove()" class="text-gray-400">✕</button></div>
-            <div class="flex gap-2"><a href="${mailtoUrl}" class="text-center w-full bg-red-600 text-white font-semibold text-xs py-1.5 rounded">📞 Ordina</a></div></div>`);
-    }
-
-    function gestisciCambioRuoloReg() {
-        const ruolo = document.getElementById('reg-ruolo').value;
-        const wrapper = document.getElementById('wrapper-codice-admin');
-        if(ruolo === 'admin') wrapper.classList.remove('hidden');
-        else wrapper.classList.add('hidden');
-    }
-
-    // ==========================================
-    // AUTENTICAZIONE E MULTI-AZIENDA CLOUD
-    // ==========================================
-    function controllaSessione() {
-        if (!supabaseClient) {
-            setTimeout(controllaSessione, 500);
-            return;
-        }
-
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            if (session && session.user) {
-                const utente = session.user;
-                const nome = utente.user_metadata.display_name || utente.email;
-                const ruolo = utente.user_metadata.role || 'collega';
-                const azienda = utente.user_metadata.azienda || 'generico';
-                const aziendaVera = utente.user_metadata.azienda_nome_vero || azienda;
-
-                sessionStorage.setItem('utente_sessione', nome);
-                sessionStorage.setItem('utente_ruolo', ruolo);
-                sessionStorage.setItem('utente_azienda', azienda);
-
-                document.getElementById('sezione-login').classList.add('hidden');
-                document.getElementById('app-magazzino').classList.remove('hidden');
-                document.getElementById('nome-utente').innerText = nome;
-                
-                const labelAz = document.getElementById('nome-azienda');
-                if(labelAz) labelAz.innerText = "🏢 " + aziendaVera;
-
-                document.getElementById('ruolo-utente').innerText = ruolo === 'admin' ? '👑 Admin' : '👷 Collega';
-
-                // Nascondiamo gli strumenti di modifica potenti (Excel, Reset, Aggiunta custom) ai colleghi
-                const visibilitaAdmin = ruolo === 'admin';
-                ['btn-carica-materiale', 'sezione-admin-custom', 'btn-reset-admin', 'btn-esporta-excel'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) visibilitaAdmin ? el.classList.remove('hidden') : el.classList.add('hidden');
-                });
-
-                // Il terminale invece ora rimane SEMPRE visibile a tutti per controllare i movimenti
-                const elTerminale = document.getElementById('sezione-terminale-admin');
-                if (elTerminale) {
-                    elTerminale.classList.remove('hidden');
-                    const titolo = elTerminale.querySelector('p');
-                    if (titolo) titolo.innerText = "// Registro attività aziendale in tempo reale";
+        class InventarioMagazzino {
+            constructor() {
+                let datiSalvati = localStorage.getItem('magazzino_elettrico_v4');
+                if (datiSalvati) {
+                    try { this.magazzino = JSON.parse(datiSalvati); } catch (e) { this.magazzino = DATI_INIZIALI; this.salvaNelDatabaseLocal(); }
+                } else {
+                    this.magazzino = DATI_INIZIALI;
+                    this.salvaNelDatabaseLocal();
                 }
+            }
+
+            salvaNelDatabaseLocal() {
+                localStorage.setItem('magazzino_elettrico_v4', JSON.stringify(this.magazzino));
+            }
+
+            salvaNelDatabase() {
+                this.salvaNelDatabaseLocal();
+                if(supabaseClient) { inviaACloud('inventario', this.magazzino); }
+            }
+
+            aggiornaCavoUnipolare(dimensione, colore, quantita, utente) {
+                const attuale = this.magazzino["cavi_unipolari"][dimensione][colore];
+                if (attuale + quantita < 0) {
+                    scriviLog(`❌ Errore: Quantità insufficiente per cavo unipolare ${dimensione} ${colore}. Disponibili: ${attuale}`, true);
+                    return false;
+                }
+                this.magazzino["cavi_unipolari"][dimensione][colore] += quantita;
+                const nuovoValore = this.magazzino["cavi_unipolari"][dimensione][colore];
+                this.salvaNelDatabase();
+                scriviLog(`✅ [${utente}] ${quantita > 0 ? 'Caricati' : 'Prelevati'} ${Math.abs(quantita)} pz di cavo unipolare ${dimensione} (${colore}).`);
+                if (quantita < 0) controllaSottoScorta(`Cavo Unipolare ${dimensione} (${colore})`, nuovoValore);
+                return true;
+            }
+
+            aggiornaBobinaStruttura(cat, articolo, metri, pezzi, utente) {
+                const attualeMetri = this.magazzino[cat][articolo].metri_totali;
+                const attualePezzi = this.magazzino[cat][articolo].pezzi;
+
+                if (attualeMetri + metri < 0 || attualePezzi + pezzi < 0) {
+                    scriviLog(`❌ Errore: Disponibilità scorte insufficiente per ${articolo}.`, true);
+                    return false;
+                }
+                this.magazzino[cat][articolo].metri_totali += metri;
+                this.magazzino[cat][articolo].pezzi += pezzi;
+                const nuoviPezzi = this.magazzino[cat][articolo].pezzi;
+                this.salvaNelDatabase();
+                scriviLog(`✅ [${utente}] Aggiornamento ${articolo}: ${Math.abs(metri)} metri, ${Math.abs(pezzi)} matasse.`);
+                if (pezzi < 0) controllaSottoScorta(`Bobine/Matasse ${articolo}`, nuoviPezzi);
+                return true;
+            }
+
+            aggiornaArticoloGenerico(cat, articolo, quantita, utente) {
+                const attuale = this.magazzino[cat][articolo] || 0;
+                if (attuale + quantita < 0) {
+                    scriviLog(`❌ Errore: Disponibilità insufficiente per ${articolo}. Disponibili: ${attuale}`, true);
+                    return false;
+                }
+                this.magazzino[cat][articolo] = attuale + quantita;
+                const nuovoValore = this.magazzino[cat][articolo];
+                this.salvaNelDatabase();
+                scriviLog(`✅ [${utente}] ${quantita > 0 ? 'Caricati' : 'Prelevati'} ${Math.abs(quantita)} unità di ${articolo}.`);
+                if (quantita < 0) controllaSottoScorta(articolo, nuovoValore);
+                return true;
+            }
+
+            aggiungiVoceCustom(cat, nomeArticolo) {
+                if (this.magazzino[cat][nomeArticolo] !== undefined) return false;
+                this.magazzino[cat][nomeArticolo] = 0;
+                this.salvaNelDatabase();
+                return true;
+            }
+        }
+
+        const inventario = new InventarioMagazzino();
+
+        async function attivaSincronizzazione() {
+            const url = document.getElementById('supabase-url').value.trim();
+            const key = document.getElementById('supabase-key').value.trim();
+            if(!url || !key) return alert("Inserisci sia l'URL che la Anon Key!");
+            localStorage.setItem('supabase_url', url);
+            localStorage.setItem('supabase_key', key);
+            await inizializzaSupabase(url, key);
+        }
+
+        async function inizializzaSupabase(url, key) {
+            if(!window.supabase) return;
+            supabaseClient = window.supabase.createClient(url, key);
+            const box = document.getElementById('box-sincronizzazione');
+            if(box) {
+                box.className = "max-w-7xl mx-auto bg-green-50 border border-green-300 p-4 rounded-md mb-6 text-sm text-green-900 flex justify-between items-center shadow-sm";
+                box.innerHTML = `<div><span class="font-bold">✅ Sincronizzazione Cloud Attiva!</span><p class="text-xs text-green-700">Magazzino condiviso collegato.</p></div>
+                <button onclick="disattivaSincronizzazione()" class="text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 cursor-pointer font-medium">Disattiva Cloud</button>`;
+            }
+            await scaricaDatiDaCloud();
+        }
+
+        function disattivaSincronizzazione() {
+            if(confirm("Disattivare il cloud?")) {
+                localStorage.removeItem('supabase_url'); localStorage.removeItem('supabase_key'); location.reload();
+            }
+        }
+
+        async function inviaACloud(chiave, valore) {
+            if(!supabaseClient) return;
+            const azienda = sessionStorage.getItem('utente_azienda') || 'generico';
+            const chiaveAziendale = chiave + '_' + azienda;
+            try { await supabaseClient.from('magazzino_condiviso').upsert({ chiave: chiaveAziendale, valore: valore }); } catch(e) { console.error(e); }
+        }
+
+        async function scaricaDatiDaCloud() {
+            if(!supabaseClient) return;
+            const azienda = sessionStorage.getItem('utente_azienda') || 'generico';
+            try {
+                const { data: invData } = await supabaseClient.from('magazzino_condiviso').select('valore').eq('chiave', 'inventario_' + azienda).single();
+                if(invData && invData.valore) { inventario.magazzino = invData.valore; inventario.salvaNelDatabaseLocal(); }
+                
+                const { data: logData } = await supabaseClient.from('magazzino_condiviso').select('valore').eq('chiave', 'registro_logs_' + azienda).single();
+                if(logData && logData.valore) { renderizzaLogs(logData.valore); }
 
                 renderizzaInterfaccia();
-                gestisciCambioCategoria();
-            } else {
-                sessionStorage.clear();
-                document.getElementById('sezione-login').classList.remove('hidden');
-                document.getElementById('app-magazzino').classList.add('hidden');
-            }
-        });
-    }
-
-    async function eseguiRegistrazione() {
-        if (!supabaseClient) return alert("Attiva prima la sincronizzazione cloud!");
-
-        const nome = document.getElementById('reg-nome').value.trim();
-        const email = document.getElementById('reg-email').value.trim().toLowerCase();
-        const password = document.getElementById('reg-password').value;
-        const ruolo = document.getElementById('reg-ruolo').value;
-        const codiceAdmin = document.getElementById('reg-codice-admin').value;
-        
-        const regAziendaEl = document.getElementById('reg-azienda');
-        if(!regAziendaEl) return alert("❌ Errore HTML: Manca il campo Nome Azienda!");
-        let aziendaRaw = regAziendaEl.value.trim();
-        if (!aziendaRaw) return alert("❌ Inserisci il nome dell'azienda (es. Ditta Rossi)!");
-        
-        const aziendaCodice = aziendaRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-        if (!nome || !email || !password) { alert("❌ Compila tutti i campi richiesti!"); return; }
-        if (ruolo === 'admin' && codiceAdmin !== CODICE_SICUREZZA_ADMIN) { alert("❌ Codice Sicurezza Admin Errato!"); return; }
-
-        const { data, error } = await supabaseClient.auth.signUp({
-            email: email, password: password,
-            options: { data: { display_name: nome, role: ruolo, azienda: aziendaCodice, azienda_nome_vero: aziendaRaw } }
-        });
-
-        if (error) {
-            alert("❌ Errore durante la registrazione: " + error.message);
-        } else {
-            alert(`✅ Account creato per l'azienda: ${aziendaRaw}!\nOra puoi fare il Login.`);
-            mostraFormRegistrazione(false);
-        }
-    }
-
-    async function eseguiLogin() {
-        if (!supabaseClient) return alert("Attiva prima la sincronizzazione cloud!");
-        const emailIn = document.getElementById('login-email').value.trim().toLowerCase();
-        const passIn = document.getElementById('login-password').value;
-        const erroreDiv = document.getElementById('errore-login');
-        erroreDiv.classList.add('hidden');
-
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email: emailIn, password: passIn });
-        if (error) { erroreDiv.innerText = "❌ Credenziali errate!"; erroreDiv.classList.remove('hidden'); }
-    }
-
-    async function eseguiLogout() {
-        if (supabaseClient) { await supabaseClient.auth.signOut(); }
-        sessionStorage.clear();
-        location.reload();
-    }
-
-    function mostraFormRegistrazione(mostra) {
-        document.getElementById('box-login').style.display = mostra ? 'none' : 'block';
-        document.getElementById('box-registrazione').classList.toggle('hidden', !mostra);
-    }
-
-    function forzaResetTotale() {
-        if (confirm("Vuoi azzerare il magazzino locale?")) { 
-            localStorage.removeItem('magazzino_elettrico_v4'); location.reload(); 
-        }
-    }
-
-    function aggiungiArticoloCustom() {
-        const nome = document.getElementById('nuovo-articolo-nome').value.trim();
-        const cat = document.getElementById('nuovo-articolo-cat').value;
-        if (!nome) return;
-        if (inventario.aggiungiVoceCustom(cat, nome)) {
-            scriviLog(`📦 [ADMIN] Aggiunto nuovo articolo: "${nome}" in [${cat}]`);
-            document.getElementById('nuovo-articolo-nome').value = '';
-            renderizzaInterfaccia(); gestisciCambioCategoria();
-        }
-    }
-
-    // ==========================================
-    // ESPORTAZIONE EXCEL DATI AZIENDALI
-    // ==========================================
-    function esportaInExcel() {
-        const magazzino = inventario.magazzino;
-        const nomeAzienda = sessionStorage.getItem('utente_azienda') || 'Inventario';
-        
-        let csv = "Categoria;Articolo;Specifiche/Colore;Quantita (Pezzi/Matasse);Metri Totali\n";
-        
-        for (const [dim, colori] of Object.entries(magazzino.cavi_unipolari)) {
-            for (const [col, q] of Object.entries(colori)) { csv += `Cavi Unipolari;${dim};${col.replace('_','/')};${q};-\n`; }
-        }
-        for (const [mod, d] of Object.entries(magazzino.bobine)) { csv += `Bobine;${mod};-;${d.pezzi};${d.metri_totali}\n`; }
-        for (const [t, d] of Object.entries(magazzino.fibra_ottica)) { csv += `Fibra Ottica;${t.toUpperCase()};-;${d.pezzi};${d.metri_totali}\n`; }
-        
-        const sezioni = ['componenti_impianti', 'strumenti_utensili', 'sicurezza_logistica', 'fo_borsa_tecnico', 'fo_consumabili_minuteria', 'fo_attrezzature_pesanti', 'altro_personalizzato'];
-        sezioni.forEach(s => {
-            const titoloCategoria = s.replace(/_/g, ' ').toUpperCase();
-            for (const [art, q] of Object.entries(magazzino[s] || {})) { csv += `${titoloCategoria};${art};-;${q};-\n`; }
-        });
-
-        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Magazzino_${nomeAzienda}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        scriviLog(`📊 [ADMIN] Esportato l'inventario Excel per l'azienda.`);
-    }
-
-    // ==========================================
-    // RENDER GRAFICA E GESTIONE
-    // ==========================================
-    function renderizzaInterfaccia() {
-        const cCavi = document.getElementById('container-cavi'); if(cCavi) cCavi.innerHTML = '';
-        for (const [dim, colori] of Object.entries(inventario.magazzino.cavi_unipolari)) {
-            let h = `<div class="font-medium text-xs text-gray-700">${dim}</div><div class="grid grid-cols-2 gap-1.5 text-xs mb-2">`;
-            for (const [col, q] of Object.entries(colori)) {
-                h += `<div class="${q <= 10 ? 'bg-red-50 border-red-300':'bg-gray-50'} p-1 rounded border flex justify-between">
-                    <span class="capitalize text-gray-500 font-medium">${col.replace('_','/')}</span>
-                    <span class="${q <= 10 ? 'text-red-600 font-bold':'text-gray-800'}">${q} ${q <= 10 ? '⚠️' : ''}</span>
-                </div>`;
-            }
-            cCavi.innerHTML += h + `</div>`;
+            } catch(e) { }
         }
 
-        const cBobine = document.getElementById('container-bobine'); if(cBobine) cBobine.innerHTML = '';
-        for (const [mod, d] of Object.entries(inventario.magazzino.bobine)) {
-            cBobine.innerHTML += `<div class="${d.pezzi <= 10 ? 'bg-red-50':'bg-gray-50'} p-1.5 rounded border text-xs flex justify-between items-center">
-                <span class="font-semibold text-gray-700">${mod}</span>
-                <span class="text-gray-600">${d.metri_totali}m / <b>${d.pezzi} Pz</b></span></div>`;
-        }
+        setInterval(() => { if(supabaseClient) scaricaDatiDaCloud(); }, 10000);
 
-        const cFibra = document.getElementById('container-fibra'); if(cFibra) cFibra.innerHTML = '';
-        for (const [t, d] of Object.entries(inventario.magazzino.fibra_ottica)) {
-            cFibra.innerHTML += `<div class="${d.pezzi <= 10 ? 'bg-red-50':'bg-gray-50'} p-1.5 rounded border text-xs flex justify-between items-center">
-                <span class="font-semibold text-gray-700 capitalize">${t}</span>
-                <span class="text-gray-600">${d.metri_totali}m / <b>${d.pezzi} Pz</b></span></div>`;
-        }
-
-        function renderOggettoSemplice(containerId, objetoDati) {
-            const el = document.getElementById(containerId); if (!el) return; el.innerHTML = '';
-            const chiavi = Object.keys(objetoDati);
-            if (chiavi.length === 0 && containerId === 'container-personalizzato') {
-                el.innerHTML = `<p class="text-gray-400 text-xs italic">Nessun articolo personalizzato.</p>`; return;
-            }
-            chiavi.forEach(k => {
-                const q = objetoDati[k];
-                el.innerHTML += `<div class="${q <= 10 ? 'bg-red-50 border-red-300':'bg-gray-50'} p-1.5 rounded border text-xs flex justify-between items-center">
-                    <span class="text-gray-700 font-medium">${k}</span><span class="font-bold bg-white px-2 rounded shadow-sm border">${q}</span></div>`;
+        function renderizzaLogs(listaLogs) {
+            const terminale = document.getElementById('log-terminale');
+            if(!terminale) return;
+            terminale.innerHTML = "";
+            listaLogs.forEach(l => {
+                const p = document.createElement('p');
+                p.className = l.errore ? "text-red-400 font-bold" : "text-green-400";
+                p.innerHTML = `<span class="text-gray-500">[${l.time}]</span> ${l.msg}`;
+                terminale.appendChild(p);
             });
         }
-        renderOggettoSemplice('container-componenti', inventario.magazzino.componenti_impianti);
-        renderOggettoSemplice('container-strumenti', inventario.magazzino.strumenti_utensili);
-        renderOggettoSemplice('container-sicurezza', inventario.magazzino.sicurezza_logistica);
-        renderOggettoSemplice('container-fo-borsa', inventario.magazzino.fo_borsa_tecnico);
-        renderOggettoSemplice('container-fo-consumabili', inventario.magazzino.fo_consumabili_minuteria);
-        renderOggettoSemplice('container-fo-pesanti', inventario.magazzino.fo_attrezzature_pesanti);
-        renderOggettoSemplice('container-personalizzato', inventario.magazzino.altro_personalizzato);
-    }
 
-    function gestisciCambioCategoria() {
-        const cat = document.getElementById('select-categoria').value;
-        const sArticolo = document.getElementById('select-articolo');
-        sArticolo.innerHTML = '';
-        document.getElementById('colore-wrapper').style.display = (cat === 'cavi') ? 'block' : 'none';
-        document.getElementById('pezzi-bobina-wrapper').classList.toggle('hidden', (cat !== 'bobine' && cat !== 'fibra'));
-        
-        if (cat === 'cavi') Object.keys(inventario.magazzino.cavi_unipolari).forEach(v => sArticolo.innerHTML += `<option value="${v}">${v}</option>`);
-        else if (cat === 'bobine') Object.keys(inventario.magazzino.bobine).forEach(v => sArticolo.innerHTML += `<option value="${v}">${v}</option>`);
-        else if (cat === 'fibra') Object.keys(inventario.magazzino.fibra_ottica).forEach(v => sArticolo.innerHTML += `<option value="${v}">${v.toUpperCase()}</option>`);
-        else Object.keys(inventario.magazzino[cat] || {}).forEach(v => sArticolo.innerHTML += `<option value="${v}">${v}</option>`);
-    }
-
-    function eseguiMovimento(isCarico) {
-        const utenteAct = sessionStorage.getItem('utente_sessione');
-        const cat = document.getElementById('select-categoria').value;
-        const articolo = document.getElementById('select-articolo').value;
-        
-        // Math.abs() assicura che il numero inserito diventi sempre positivo.
-        // In questo modo, il tasto "Preleva" (-1) andrà sempre a fare una corretta sottrazione.
-        let qta = Math.abs(parseInt(document.getElementById('input-quantita').value) || 0);
-        let pzBobina = Math.abs(parseInt(document.getElementById('input-pezzi-bobina').value) || 0);
-
-        if (qta === 0 && pzBobina === 0) return;
-        const segno = isCarico ? 1 : -1;
-        qta *= segno; pzBobina *= segno;
-
-        let successo = false;
-        if (cat === 'cavi') successo = inventario.aggiornaCavoUnipolare(articolo, document.getElementById('select-colore').value, qta, utenteAct);
-        else if (cat === 'bobine' || cat === 'fibra') successo = inventario.aggiornaBobinaStruttura(cat === 'fibra' ? 'fibra_ottica' : 'bobine', articolo.toLowerCase(), qta, pzBobina, utenteAct);
-        else successo = inventario.aggiornaArticoloGenerico(cat, articolo, qta, utenteAct);
-
-        if (successo) {
-            renderizzaInterfaccia();
-            document.getElementById('input-quantita').value = '';
-            document.getElementById('input-pezzi-bobina').value = '';
+        async function scriviLog(messaggio, isErrore = false) {
+            const timestamp = new Date().toLocaleTimeString('it-IT');
+            let logs = [];
+            const azienda = sessionStorage.getItem('utente_azienda') || 'generico';
+            if(supabaseClient) {
+                const { data } = await supabaseClient.from('magazzino_condiviso').select('valore').eq('chiave', 'registro_logs_' + azienda).single();
+                if(data && data.valore) logs = data.valore;
+            }
+            logs.push({ time: timestamp, msg: messaggio, errore: isErrore });
+            if(logs.length > 100) logs.shift();
+            
+            renderizzaLogs(logs);
+            if(supabaseClient) await inviaACloud('registro_logs', logs);
         }
-    }
 
-    window.onload = async () => {
-        const savedUrl = localStorage.getItem('supabase_url'); const savedKey = localStorage.getItem('supabase_key');
-        if(savedUrl && savedKey) await inizializzaSupabase(savedUrl, savedKey);
-        controllaSessione();
-    };
-</script>
+        function controllaSottoScorta(nomeArticolo, quantitaAttuale) {
+            if (quantitaAttuale <= 10) {
+                scriviLog(`⚠️ ATTENZIONE: ${nomeArticolo} è sotto scorta! Rimanenti: ${quantitaAttuale} unità`, true);
+                if(sessionStorage.getItem('utente_ruolo') === 'admin') mostraNotificaVisiva(nomeArticolo, quantitaAttuale);
+            }
+        }
+
+        function mostraNotificaVisiva(articolo, qta) {
+            const container = document.getElementById('container-notifiche');
+            const idNotifica = 'notifica-' + Date.now();
+            const mailtoUrl = `mailto:fornitore@esempio.com?subject=Ordine%20Materiale&body=Richiesta%20urgente%20per%20${articolo}`;
+            container.insertAdjacentHTML('beforeend', `<div id="${idNotifica}" class="bg-red-50 border-l-4 border-red-600 p-4 rounded shadow-md border flex flex-col gap-2 bg-white">
+                <div class="flex justify-between items-start"><div><h4 class="text-sm font-bold text-red-800">⚠️ Scorta Critica</h4><p class="text-xs text-gray-700 font-medium mt-1"><b>${articolo}</b> residuo: <b>${qta}</b></p></div><button onclick="this.closest('#${idNotifica}').remove()" class="text-gray-400">✕</button></div>
+                <div class="flex gap-2"><a href="${mailtoUrl}" class="text-center w-full bg-red-600 text-white font-semibold text-xs py-1.5 rounded">📞 Ordina</a></div></div>`);
+        }
+
+        function gestisciCambioRuoloReg() {
+            const ruolo = document.getElementById('reg-ruolo').value;
+            const wrapper = document.getElementById('wrapper-codice-admin');
+            if(ruolo === 'admin') wrapper.classList.remove('hidden');
+            else wrapper.classList.add('hidden');
+        }
+
+        // ==========================================
+        // SWITCH SCHERMATE DI AUTENTICAZIONE
+        // ==========================================
+        function mostraFormRegistrazione(stato) {
+            document.getElementById('box-login').classList.add('hidden');
+            document.getElementById('box-registrazione').classList.add('hidden');
+            document.getElementById('box-attesa-email').classList.add('hidden');
+            document.getElementById('box-verifica-sms').classList.add('hidden');
+
+            if(stato === 'LOGIN') document.getElementById('box-login').classList.remove('hidden');
+            else if(stato === 'REGISTRAZIONE') document.getElementById('box-registrazione').classList.remove('hidden');
+            else if(stato === 'ATTESA_EMAIL') document.getElementById('box-attesa-email').classList.remove('hidden');
+            else if(stato === 'VERIFICA_SMS') document.getElementById('box-verifica-sms').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // LOGICA DI CONTROLLO SESSIONE ED SMS
+        // ==========================================
+        function controllaSessione() {
+            if (!supabaseClient) {
+                setTimeout(controllaSessione, 500);
+                return;
+            }
+
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                if (session && session.user) {
+                    const utente = session.user;
+
+                    // CONTROLLO 1: L'utente ha confermato il telefono via SMS?
+                    // (Se l'SMS provider su Supabase è configurato, controlliamo l'attributo nativo phone_confirmed_at)
+                    if (utente.phone && !utente.phone_confirmed_at) {
+                        // Se non è confermato il telefono, attiviamo la sfida SMS e blocchiamo l'entrata alla dashboard
+                        if (event === 'SIGNED_IN') {
+                            await supabaseClient.auth.updateUser({ phone: utente.phone }); // Invia SMS OTP nativo
+                        }
+                        mostraFormRegistrazione('VERIFICA_SMS');
+                        return;
+                    }
+
+                    const nome = utente.user_metadata.display_name || utente.email;
+                    const ruolo = utente.user_metadata.role || 'collega';
+                    const azienda = utente.user_metadata.azienda || 'generico';
+                    const aziendaVera = utente.user_metadata.azienda_nome_vero || azienda;
+
+                    sessionStorage.setItem('utente_sessione', nome);
+                    sessionStorage.setItem('utente_ruolo', ruolo);
+                    sessionStorage.setItem('utente_azienda', azienda);
+
+                    document.getElementById('sezione-login').classList.add('hidden');
+                    document.getElementById('app-magazzino').classList.remove('hidden');
+                    document.getElementById('nome-utente').innerText = nome;
+                    
+                    const labelAz = document.getElementById('nome-azienda');
+                    if(labelAz) labelAz.innerText = "🏢 " + aziendaVera;
+
+                    document.getElementById('ruolo-utente').innerText = ruolo === 'admin' ? '👑 Admin' : '👷 Collega';
+
+                    const visibilitaAdmin = ruolo === 'admin';
+                    ['btn-carica-materiale', 'sezione-admin-custom', 'btn-reset-admin', 'btn-esporta-excel', 'box-credenziali-api'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el) visibilitaAdmin ? el.classList.remove('hidden') : el.classList.add('hidden');
+                    });
+
+                    // Mostra i parametri API generati all'Admin
+                    if(visibilitaAdmin) {
+                        document.getElementById('api-url-display').innerText = localStorage.getItem('supabase_url');
+                        document.getElementById('api-key-display').innerText = utente.user_metadata.ditta_api_key || "Generata su DB";
+                        document.getElementById('api-code-display').innerText = utente.user_metadata.codice_admin_generato || "1234";
+                    }
+
+                    const elTerminale = document.getElementById('sezione-terminale-admin');
+                    if (elTerminale) {
+                        elTerminale.classList.remove('hidden');
+                        const titolo = elTerminale.querySelector('p');
+                        if (titolo) titolo.innerText = "// Registro attività aziendale in tempo reale";
+                    }
+
+                    renderizzaInterfaccia();
+                    gestisciCambioCategoria();
+                } else {
+                    sessionStorage.clear();
+                    document.getElementById('sezione-login').classList.remove('hidden');
+                    document.getElementById('app-magazzino').classList.add('hidden');
+                }
+            });
+        }
+
+        async function eseguiRegistrazione() {
+            if (!supabaseClient) return alert("Attiva prima la sincronizzazione cloud!");
+
+            const nome = document.getElementById('reg-nome').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const telefono = document.getElementById('reg-telefono').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const ruolo = document.getElementById('reg-ruolo').value;
+            const codiceAdmin = document.getElementById('reg-codice-admin').value;
+            
+            const regAziendaEl = document.getElementById('reg-azienda');
+            if(!regAziendaEl) return alert("❌ Errore HTML: Manca il campo Nome Azienda!");
+            let aziendaRaw = regAziendaEl.value.trim();
+            if (!aziendaRaw) return alert("❌ Inserisci il nome dell'azienda!");
+            
+            const aziendaCodice = aziendaRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+            if (!nome || !email || !password || !telefono) { alert("❌ Compila tutti i campi richiesti (Incluso Telefono)!"); return; }
+            if (ruolo === 'admin' && codiceAdmin !== CODICE_SICUREZZA_ADMIN) { alert("❌ Codice Sicurezza Admin Errato!"); return; }
+
+            // Generazione automatica credenziali API per la ditta (UUID simulato sicuro)
+            const dittaApiKey = 'tk_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            const codiceAdminCasuale = Math.floor(100000 + Math.random() * 900000); // Codice numerico a 6 cifre inviato via mail
+
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: email, password: password, phone: telefono,
+                options: { 
+                    data: { 
+                        display_name: nome, 
+                        role: ruolo, 
+                        azienda: aziendaCodice, 
+                        azienda_nome_vero: aziendaRaw,
+                        ditta_api_key: dittaApiKey,
+                        codice_admin_generato: codiceAdminCasuale
+                    } 
+                }
+            });
+
+            if (error) {
+                alert("❌ Errore durante la registrazione: " + error.message);
+            } else {
+                // Punto 1 completato: L'utente viene reindirizzato all'attesa della mail
+                mostraFormRegistrazione('ATTESA_EMAIL');
+            }
+        }
+
+        async function verificaCodiceSMS() {
+            const codiceOtp = document.getElementById('input-otp-sms').value.trim();
+            const session = await supabaseClient.auth.getSession();
+            const phone = session.data?.session?.user?.phone;
+
+            if(!codiceOtp || !phone) return alert("Codice o numero non valido.");
+
+            const { data, error } = await supabaseClient.auth.verifyOtp({
+                phone: phone,
+                token: codiceOtp,
+                type: 'phone_change'
+            });
+
+            if(error) {
+                alert("❌ Codice SMS errato o scaduto: " + error.message);
+            } else {
+                alert("✅ Telefono Verificato con Successo!");
+                location.reload();
+            }
+        }
+
+        async function eseguiLogin() {
+            if (!supabaseClient) return alert("Attiva prima la sincronizzazione cloud!");
+            const emailIn = document.getElementById('login-email').value.trim().toLowerCase();
+            const passIn = document.getElementById('login-password').value;
+            const erroreDiv = document.getElementById('errore-login');
+            erroreDiv.classList.add('hidden');
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email: emailIn, password: passIn });
+            if (error) { erroreDiv.innerText = "❌ Credenziali errate o email non ancora confermata!"; erroreDiv.classList.remove('hidden'); }
+        }
+
+        async function eseguiLogout() {
+            if (supabaseClient) { await supabaseClient.auth.signOut(); }
+            sessionStorage.clear();
+            location.reload();
+        }
+
+        function forzaResetTotale() {
+            if (confirm("Vuoi azzerare il magazzino locale?")) { 
+                localStorage.removeItem('magazzino_elettrico_v4'); location.reload(); 
+            }
+        }
+
+        function aggiungiArticoloCustom() {
+            const nome = document.getElementById('nuovo-articolo-nome').value.trim();
+            const cat = document.getElementById('nuovo-articolo-cat').value;
+            if (!nome) return;
+            if (inventario.aggiungiVoceCustom(cat, nome)) {
+                scriviLog(`📦 [ADMIN] Aggiunto nuovo articolo: "${nome}" in [${cat}]`);
+                document.getElementById('nuovo-articolo-nome').value = '';
+                renderizzaInterfaccia(); gestisciCambioCategoria();
+            }
+        }
+
+        // ==========================================
+        // ESPORTAZIONE EXCEL DATI AZIENDALI
+        // ==========================================
+        function esportaInExcel() {
+            const magazzino = inventario.magazzino;
+            const nomeAzienda = sessionStorage.getItem('utente_azienda') || 'Inventario';
+            
+            let csv = "Categoria;Articolo;Specifiche/Colore;Quantita (Pezzi/Matasse);Metri Totali\n";
+            
+            for (const [dim, colori] of Object.entries(magazzino.cavi_unipolari)) {
+                for (const [col, q] of Object.entries(colori)) { csv += `Cavi Unipolari;${dim};${col.replace('_','/')};${q};-\n`; }
+            }
+            for (const [mod, d] of Object.entries(magazzino.bobine)) { csv += `Bobine;${mod};-;${d.pezzi};${d.metri_totali}\n`; }
+            for (const [t, d] of Object.entries(magazzino.fibra_ottica)) { csv += `Fibra Ottica;${t.toUpperCase()};-;${d.pezzi};${d.metri_totali}\n`; }
+            
+            const sezioni = ['componenti_impianti', 'strumenti_utensili', 'sicurezza_logistica', 'fo_borsa_tecnico', 'fo_consumabili_minuteria', 'fo_attrezzature_pesanti', 'altro_personalizzato'];
+            sezioni.forEach(s => {
+                const titoloCategoria = s.replace(/_/g, ' ').toUpperCase();
+                for (const [art, q] of Object.entries(magazzino[s] || {})) { csv += `${titoloCategoria};${art};-;${q};-\n`; }
+            });
+
+            const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Magazzino_${nomeAzienda}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            scriviLog(`📊 [ADMIN] Esportato l'inventario Excel per l'azienda.`);
+        }
+
+        // ==========================================
+        // RENDER GRAFICA E GESTIONE
+        // ==========================================
+        function renderizzaInterfaccia() {
+            const cCavi = document.getElementById('container-cavi'); if(cCavi) cCavi.innerHTML = '';
+            for (const [dim, colori] of Object.entries(inventario.magazzino.cavi_unipolari)) {
+                let h = `<div class="font-medium text-xs text-gray-700">${dim}</div><div class="grid grid-cols-2 gap-1.5 text-xs mb-2">`;
+                for (const [col, q] of Object.entries(colori)) {
+                    h += `<div class="${q <= 10 ? 'bg-red-50 border-red-300':'bg-gray-50'} p-1 rounded border flex justify-between">
+                        <span class="capitalize text-gray-500 font-medium">${col.replace('_','/')}</span>
+                        <span class="${q <= 10 ? 'text-red-600 font-bold':'text-gray-800'}">${q} ${q <= 10 ? '⚠️' : ''}</span>
+                    </div>`;
+                }
+                cCavi.innerHTML += h + `</div>`;
+            }
+
+            const cBobine = document.getElementById('container-bobine'); if(cBobine) cBobine.innerHTML = '';
+            for (const [mod, d] of Object.entries(inventario.magazzino.bobine)) {
+                cBobine.innerHTML += `<div class="${d.pezzi <= 10 ? 'bg-red-50':'bg-gray-50'} p-1.5 rounded border text-xs flex justify-between items-center">
+                    <span class="font-semibold text-gray-700">${mod}</span>
+                    <span class="text-gray-600">${d.metri_totali}m / <b>${d.pezzi} Pz</b></span></div>`;
+            }
+
+            const cFibra = document.getElementById('container-fibra'); if(cFibra) cFibra.innerHTML = '';
+            for (const [t, d] of Object.entries(inventario.magazzino.fibra_ottica)) {
+                cFibra.innerHTML += `<div class="${d.pezzi <= 10 ? 'bg-red-50':'bg-gray-50'} p-1.5 rounded border text-xs flex justify-between items-center">
+                    <span class="font-semibold text-gray-700 capitalize">${t}</span>
+                    <span class="text-gray-600">${d.metri_totali}m / <b>${d.pezzi} Pz</b></span></div>`;
+            }
+
+            function renderOggettoSemplice(containerId, objetoDati) {
+                const el = document.getElementById(containerId); if (!el) return; el.innerHTML = '';
+                const chiavi = Object.keys(objetoDati);
+                if (chiavi.length === 0 && containerId === 'container-personalizzato') {
+                    el.innerHTML = `<p class="text-gray-400 text-xs italic">Nessun articolo personalizzato.</p>`; return;
+                }
+                chiavi.forEach(k => {
+                    const q = objetoDati[k];
+                    el.innerHTML += `<div class="${q <= 10 ? 'bg-red-50 border-red-300':'bg-gray-50'} p-1.5 rounded border text-xs flex justify-between items-center">
+                        <span class="text-gray-700 font-medium">${k}</span><span class="font-bold bg-white px-2 rounded shadow-sm border">${q}</span></div>`;
+                });
+            }
+            renderOggettoSemplice('container-componenti', inventario.magazzino.componenti_impianti);
+            renderOggettoSemplice('container-strumenti', inventario.magazzino.strumenti_utensili);
+            renderOggettoSemplice('container-sicurezza', inventario.magazzino.sicurezza_logistica);
+            renderOggettoSemplice('container-fo-borsa', inventario.magazzino.fo_borsa_tecnico);
+            renderOggettoSemplice('container-fo-consumabili', inventario.magazzino.fo_consumabili_minuteria);
+            renderOggettoSemplice('container-fo-pesanti', inventario.magazzino.fo_attrezzature_pesanti);
+            renderOggettoSemplice('container-personalizzato', inventario.magazzino.altro_personalizzato);
+        }
+
+        function gestisciCambioCategoria() {
+            const cat = document.getElementById('select-categoria').value;
+            const sArticolo = document.getElementById('select-articolo');
+            sArticolo.innerHTML = '';
+            document.getElementById('colore-wrapper').style.display = (cat === 'cavi') ? 'block' : 'none';
+            document.getElementById('pezzi-bobina-wrapper').classList.toggle('hidden', (cat !== 'bobine' && cat !== 'fibra'));
+            
+            if (cat === 'cavi') Object.keys(inventario.magazzino.cavi_unipolari).forEach(v => sArticolo.innerHTML += `<option value="${v}">${v}</option>`);
+            else if (cat === 'bobine') Object.keys(inventario.magazzino.bobine).forEach(v => sArticolo.innerHTML += `<option value="${v}">${v}</option>`);
+            else if (cat === 'fibra') Object.keys(inventario.magazzino.fibra_ottica).forEach(v => sArticolo.innerHTML += `<option value="${v}">${v.toUpperCase()}</option>`);
+            else Object.keys(inventario.magazzino[cat] || {}).forEach(v => sArticolo.innerHTML += `<option value="${v}">${v}</option>`);
+        }
+
+        function eseguiMovimento(isCarico) {
+            const utenteAct = sessionStorage.getItem('utente_sessione');
+            const cat = document.getElementById('select-categoria').value;
+            const articolo = document.getElementById('select-articolo').value;
+            
+            let qta = Math.abs(parseInt(document.getElementById('input-quantita').value) || 0);
+            let pzBobina = Math.abs(parseInt(document.getElementById('input-pezzi-bobina').value) || 0);
+
+            if (qta === 0 && pzBobina === 0) return;
+            const segno = isCarico ? 1 : -1;
+            qta *= segno; pzBobina *= segno;
+
+            let successo = false;
+            if (cat === 'cavi') successo = inventario.aggiornaCavoUnipolare(articolo, document.getElementById('select-colore').value, qta, utenteAct);
+            else if (cat === 'bobine' || cat === 'fibra') successo = inventario.aggiornaBobinaStruttura(cat === 'fibra' ? 'fibra_ottica' : 'bobine', articolo.toLowerCase(), qta, pzBobina, utenteAct);
+            else successo = inventario.aggiornaArticoloGenerico(cat, articolo, qta, utenteAct);
+
+            if (successo) {
+                renderizzaInterfaccia();
+                document.getElementById('input-quantita').value = '';
+                document.getElementById('input-pezzi-bobina').value = '';
+            }
+        }
+
+        window.onload = async () => {
+            const savedUrl = localStorage.getItem('supabase_url'); const savedKey = localStorage.getItem('supabase_key');
+            if(savedUrl && savedKey) await inizializzaSupabase(savedUrl, savedKey);
+            controllaSessione();
+        };
+    </script>
+</body>
+</html>
+    
